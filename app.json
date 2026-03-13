@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "hillyeah-mobile",
+    "name": "HillYeah",
     "slug": "hillyeah-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app-logo.png",
     "scheme": "hillyeahmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -12,10 +12,11 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hillyeah.mobile",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
+        "foregroundImage": "./assets/images/app-logo.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
@@ -38,7 +39,9 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true,

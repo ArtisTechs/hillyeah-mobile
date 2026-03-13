@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "36453671455",
+    "firebase_url": "https://hillyeah-2a546-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "hillyeah-2a546",
+    "storage_bucket": "hillyeah-2a546.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36453671455:android:3088001e6cf13dba9b6b2a",
+        "android_client_info": {
+          "package_name": "com.hillyeah.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBX1WHdNipE-K0rELSX8KpdRIzIeli1gqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36453671455:android:dbacfec4d13e4ed19b6b2a",
+        "android_client_info": {
+          "package_name": "com.mycompany.hillyeahmonitor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBX1WHdNipE-K0rELSX8KpdRIzIeli1gqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
