@@ -6,6 +6,7 @@ export default function PagesLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="loginScreen" options={{ headerShown: false }} />
       <Stack.Screen name="dashboardScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="weatherBroadcastScreen" options={{ headerShown: false }} />
     </Stack>
   );
 }

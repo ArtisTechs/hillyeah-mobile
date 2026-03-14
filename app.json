@@ -14,6 +14,7 @@
     "android": {
       "package": "com.hillyeah.mobile",
       "googleServicesFile": "./google-services.json",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/app-logo.png",
@@ -41,7 +42,22 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/auth"
+      "@react-native-firebase/auth",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow HillYeah to access your location to show your position on the dashboard map."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sounds/warning.wav",
+            "./assets/sounds/danger.wav"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

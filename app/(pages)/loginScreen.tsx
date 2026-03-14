@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -10,6 +10,7 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
+    ToastAndroid,
     View,
 } from "react-native";
 
@@ -18,10 +19,11 @@ import { ThemedView } from "@/components/themed-view";
 import { Colors, Fonts } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-  getAuthErrorMessage,
-  signInWithEmail,
-  signUpWithEmail,
-  subscribeToAuthState,
+    getAuthErrorMessage,
+    signInWithEmail,
+    signOutCurrentUser,
+    signUpWithEmail,
+    subscribeToAuthState,
 } from "@/services/authService";
 import { getRememberedEmail } from "@/services/storageService";
 
@@ -33,6 +35,9 @@ type FormErrors = {
 };
 
 export default function LoginScreen() {
+  const { mode: modeParam } = useLocalSearchParams<{
+    mode?: string | string[];
+  }>();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -47,6 +52,20 @@ export default function LoginScreen() {
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const suppressAuthRedirectRef = useRef(false);
+
+  useEffect(() => {
+    const requestedMode = Array.isArray(modeParam) ? modeParam[0] : modeParam;
+
+    if (requestedMode !== "login" && requestedMode !== "signup") {
+      return;
+    }
+
+    setMode(requestedMode);
+    setErrors({});
+    setShowPassword(false);
+    setAuthError("");
+  }, [modeParam]);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,8 +86,16 @@ export default function LoginScreen() {
       }
 
       if (user) {
+        if (suppressAuthRedirectRef.current) {
+          return;
+        }
+
         router.replace("/dashboardScreen");
         return;
+      }
+
+      if (suppressAuthRedirectRef.current) {
+        suppressAuthRedirectRef.current = false;
       }
 
       setIsInitializing(false);
@@ -122,7 +149,10 @@ export default function LoginScreen() {
     try {
       if (isLogin) {
         await signInWithEmail(email, password);
+        router.replace("/dashboardScreen");
       } else {
+        suppressAuthRedirectRef.current = true;
+
         await signUpWithEmail({
           email,
           firstName,
@@ -130,10 +160,22 @@ export default function LoginScreen() {
           lastName,
           password,
         });
-      }
 
-      router.replace("/dashboardScreen");
+        await signOutCurrentUser();
+        suppressAuthRedirectRef.current = false;
+
+        if (Platform.OS === "android") {
+          ToastAndroid.show(
+            "Account created successfully. Please log in.",
+            ToastAndroid.SHORT,
+          );
+        }
+
+        handleModeChange("login");
+        setPassword("");
+      }
     } catch (error) {
+      suppressAuthRedirectRef.current = false;
       setAuthError(getAuthErrorMessage(error));
     } finally {
       setIsSubmitting(false);
@@ -187,7 +229,8 @@ export default function LoginScreen() {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
         style={styles.container}
       >
         <View style={styles.authShell}>
@@ -279,8 +322,12 @@ export default function LoginScreen() {
 
           <View style={styles.formViewport}>
             <ScrollView
+              automaticallyAdjustKeyboardInsets
               bounces={false}
               contentContainerStyle={styles.formScrollContent}
+              keyboardDismissMode={
+                Platform.OS === "ios" ? "interactive" : "on-drag"
+              }
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -508,7 +555,10 @@ export default function LoginScreen() {
                       size={18}
                     />
                     <ThemedText
-                      style={[styles.errorBannerText, { color: palette.danger }]}
+                      style={[
+                        styles.errorBannerText,
+                        { color: palette.danger },
+                      ]}
                     >
                       {authError}
                     </ThemedText>
@@ -648,7 +698,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingTop: 40,
   },
   authShell: {
     gap: 20,
@@ -685,18 +735,18 @@ const styles = StyleSheet.create({
   logoShell: {
     alignItems: "center",
     alignSelf: "center",
-    borderRadius: 28,
+    borderRadius: 10,
     borderWidth: 1,
-    height: 86,
+    height: 45,
     justifyContent: "center",
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.12,
-    shadowRadius: 24,
-    width: 86,
+    shadowRadius: 10,
+    width: 45,
   },
   logo: {
-    height: 56,
-    width: 56,
+    height: 32,
+    width: 32,
   },
   copyBlock: {
     alignItems: "center",
@@ -731,6 +781,7 @@ const styles = StyleSheet.create({
   },
   formScrollContent: {
     flexGrow: 1,
+    paddingBottom: 10,
   },
   formHeader: {
     gap: 6,
