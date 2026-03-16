@@ -1,4 +1,6 @@
-import firestore from "@react-native-firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
+
+import { firestoreDb } from "./firebaseClient";
 import { saveLastSensorData } from "./storageService";
 
 export type SensorData = {
@@ -13,12 +15,13 @@ export type SensorData = {
   };
 };
 
-const sensorRef = firestore().doc("landslide_data/sensor_doc");
+const sensorRef = doc(firestoreDb, "landslide_data", "sensor_doc");
 
 export function subscribeToSensor(callback: (data: SensorData | null) => void) {
-  return sensorRef.onSnapshot(
+  return onSnapshot(
+    sensorRef,
     async (snapshot) => {
-      if (!snapshot.exists) {
+      if (!snapshot.exists()) {
         callback(null);
         return;
       }

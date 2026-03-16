@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { Image } from "expo-image";
+import { isRunningInExpoGo } from "expo";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -283,6 +284,7 @@ export default function DashboardScreen() {
   const [isLandslideModalVisible, setIsLandslideModalVisible] = useState(false);
   const lastTriggeredAlertRef = useRef<LandslideAlertLevel | null>(null);
   const alertLoopSoundRef = useRef<Audio.Sound | null>(null);
+  const isAndroidExpoGo = Platform.OS === "android" && isRunningInExpoGo();
   const toneColor = {
     success: palette.success,
     warning: palette.warning,
@@ -317,6 +319,13 @@ export default function DashboardScreen() {
     let isMounted = true;
 
     const prepareNotifications = async () => {
+      if (isAndroidExpoGo) {
+        if (isMounted) {
+          setHasNotificationPermission(false);
+        }
+        return;
+      }
+
       try {
         if (Platform.OS === "android") {
           await Notifications.setNotificationChannelAsync(LANDSLIDE_WARNING_CHANNEL_ID, {
@@ -362,7 +371,7 @@ export default function DashboardScreen() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAndroidExpoGo]);
 
   useEffect(() => {
     let isMounted = true;
@@ -752,7 +761,7 @@ export default function DashboardScreen() {
         : LANDSLIDE_WARNING_CHANNEL_ID;
 
     const sendAlertNotification = async () => {
-      if (!hasNotificationPermission) return;
+      if (isAndroidExpoGo || !hasNotificationPermission) return;
 
       try {
         await Notifications.scheduleNotificationAsync({
@@ -776,7 +785,12 @@ export default function DashboardScreen() {
     };
 
     void sendAlertNotification();
-  }, [hasNotificationPermission, landslideAlertLevel, sensorData]);
+  }, [
+    hasNotificationPermission,
+    isAndroidExpoGo,
+    landslideAlertLevel,
+    sensorData,
+  ]);
 
   const handleCloseLandslideModal = () => {
     setIsLandslideModalVisible(false);

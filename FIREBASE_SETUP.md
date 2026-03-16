@@ -1,120 +1,38 @@
 # Firebase Setup
 
-This project now uses Firebase Authentication for email/password login and sign-up through `@react-native-firebase/auth`.
-
-Important:
-
-- `@react-native-firebase/*` does not run in Expo Go.
-- Use an Expo development build or a native build.
+This project uses the Firebase JavaScript SDK (`firebase`) for Auth + Firestore.
+It works in Expo Go (including iPhone) without native Firebase modules.
 
 ## 1. Create and configure the Firebase project
 
-1. Open the Firebase console and create or select your Firebase project.
-2. In Authentication, enable the `Email/Password` sign-in provider.
-3. If you want the sign-up flow to save profile data to Firestore, create a Firestore database in the same project.
+1. Open Firebase console and create/select your project.
+2. Enable `Email/Password` in Authentication.
+3. Create Firestore in the same project.
 
-## 2. Register your mobile apps in Firebase
+## 2. Configure Expo public env vars
 
-You need stable app IDs before downloading config files:
-
-- Android package name: add `expo.android.package` in `app.json`
-- iOS bundle identifier: add `expo.ios.bundleIdentifier` in `app.json`
-
-Use your own reverse-DNS IDs, for example:
-
-```json
-{
-  "expo": {
-    "android": {
-      "package": "com.yourcompany.hillyeahmobile"
-    },
-    "ios": {
-      "bundleIdentifier": "com.yourcompany.hillyeahmobile"
-    }
-  }
-}
-```
-
-After that:
-
-1. Register the Android app in Firebase and download `google-services.json`.
-2. Register the iOS app in Firebase and download `GoogleService-Info.plist`.
-
-## 3. Place the Firebase config files
-
-Put the files in the project root:
-
-- `./google-services.json`
-- `./GoogleService-Info.plist`
-
-Then add these paths to `app.json`:
-
-```json
-{
-  "expo": {
-    "android": {
-      "googleServicesFile": "./google-services.json"
-    },
-    "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist"
-    }
-  }
-}
-```
-
-## 4. Add the required Expo config
-
-This repo already includes the React Native Firebase plugins for:
-
-- `@react-native-firebase/app`
-- `@react-native-firebase/auth`
-
-If you want to build for iOS, React Native Firebase documents that you should also use static frameworks through `expo-build-properties`. Example:
-
-```json
-{
-  "expo": {
-    "plugins": [
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ]
-    ]
-  }
-}
-```
-
-Install the supporting packages if they are not already present:
+Set these in `.env`:
 
 ```bash
-npx expo install expo-dev-client expo-build-properties
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+EXPO_PUBLIC_FIREBASE_APP_ID=...
 ```
 
-## 5. Build with native Firebase support
+The app currently has defaults in `services/firebaseClient.ts` for the existing Firebase project, but env vars are preferred.
 
-Because this app uses native Firebase modules, do not test auth in Expo Go.
-
-Use one of these flows:
+## 3. Start in Expo Go mode
 
 ```bash
-npx expo prebuild --clean
-npx expo run:android
+npm start
 ```
 
-```bash
-npx expo prebuild --clean
-npx expo run:ios
-```
+Then scan the QR code with Expo Go on iPhone.
 
-Or create an EAS development build and install it on your device.
-
-## 6. Firestore rules for user profiles
+## 4. Firestore rules for user profiles
 
 The sign-up flow writes profile data to `users/{uid}`. A minimal rule set is:
 
@@ -135,7 +53,7 @@ service cloud.firestore {
 
 Adjust the `landslide_data` rules to match your actual app requirements.
 
-## 7. What was implemented in the app
+## 5. What is implemented in the app
 
 - Login calls Firebase `signInWithEmailAndPassword`
 - Sign-up calls Firebase `createUserWithEmailAndPassword`

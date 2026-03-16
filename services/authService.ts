@@ -1,9 +1,17 @@
-import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
+import { firebaseAuth, firestoreDb } from "./firebaseClient";
 import { saveRememberedEmail } from "./storageService";
 
-export type AuthUser = FirebaseAuthTypes.User;
+export type AuthUser = User;
 
 export type SignUpParams = {
   firstName: string;
@@ -18,8 +26,6 @@ type AuthErrorWithCode = {
   message?: string;
 };
 
-const usersCollection = firestore().collection("users");
-
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -32,16 +38,17 @@ function buildDisplayName(params: Pick<SignUpParams, "firstName" | "middleName" 
 }
 
 export function getCurrentUser() {
-  return auth().currentUser;
+  return firebaseAuth.currentUser;
 }
 
 export function subscribeToAuthState(callback: (user: AuthUser | null) => void) {
-  return auth().onAuthStateChanged(callback);
+  return onAuthStateChanged(firebaseAuth, callback);
 }
 
 export async function signInWithEmail(email: string, password: string) {
   const normalizedEmail = normalizeEmail(email);
-  const credential = await auth().signInWithEmailAndPassword(
+  const credential = await signInWithEmailAndPassword(
+    firebaseAuth,
     normalizedEmail,
     password,
   );
@@ -54,24 +61,26 @@ export async function signInWithEmail(email: string, password: string) {
 export async function signUpWithEmail(params: SignUpParams) {
   const normalizedEmail = normalizeEmail(params.email);
   const displayName = buildDisplayName(params);
-  const credential = await auth().createUserWithEmailAndPassword(
+  const credential = await createUserWithEmailAndPassword(
+    firebaseAuth,
     normalizedEmail,
     params.password,
   );
 
   if (displayName) {
-    await credential.user.updateProfile({ displayName });
+    await updateProfile(credential.user, { displayName });
   }
 
   try {
-    await usersCollection.doc(credential.user.uid).set(
+    await setDoc(
+      doc(firestoreDb, "users", credential.user.uid),
       {
         firstName: params.firstName.trim(),
         middleName: params.middleName?.trim() ?? "",
         lastName: params.lastName.trim(),
         displayName,
         email: normalizedEmail,
-        createdAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
       },
       { merge: true },
     );
@@ -86,7 +95,7 @@ export async function signUpWithEmail(params: SignUpParams) {
 }
 
 export async function signOutCurrentUser() {
-  await auth().signOut();
+  await signOut(firebaseAuth);
 }
 
 export function getAuthErrorMessage(error: unknown) {
