@@ -550,17 +550,17 @@ export default function DashboardScreen() {
   const landslideAlertLevel = useMemo<LandslideAlertLevel | null>(() => {
     if (!sensorData) return null;
 
-    const allDanger =
-      riskTones.moistureTone === "danger" &&
-      riskTones.vibrationTone === "danger" &&
-      riskTones.tiltTone === "danger";
-    if (allDanger) return "danger";
+    const tones = [riskTones.moistureTone, riskTones.vibrationTone, riskTones.tiltTone];
+    const dangerCount = tones.filter((tone) => tone === "danger").length;
+    const warningCount = tones.filter((tone) => tone === "warning").length;
 
-    const allWarning =
-      riskTones.moistureTone === "warning" &&
-      riskTones.vibrationTone === "warning" &&
-      riskTones.tiltTone === "warning";
-    if (allWarning) return "warning";
+    if (dangerCount === 3 || (dangerCount === 2 && warningCount === 1)) {
+      return "danger";
+    }
+
+    if (warningCount === 3 || (dangerCount === 1 && warningCount === 2)) {
+      return "warning";
+    }
 
     return null;
   }, [riskTones, sensorData]);
