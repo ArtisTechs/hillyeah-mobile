@@ -100,9 +100,9 @@ function resolveMetricTones(sensorData: SensorData | null) {
         ? "warning"
         : "success";
   const vibrationTone: MetricTone =
-    sensorData && sensorData.vibration >= 20
+    sensorData && sensorData.vibration >= 14
       ? "danger"
-      : sensorData && sensorData.vibration >= 15
+      : sensorData && sensorData.vibration >= 12
         ? "warning"
         : "success";
   const tiltTone: MetricTone =
